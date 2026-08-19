@@ -1,0 +1,48 @@
+# ==========================================
+# ETAPA 1: Construcción (Builder + JRE recortado)
+# ==========================================
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
+WORKDIR /app
+
+# Descargamos dependencias primero
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copiamos código fuente y compilamos el archivo .jar
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Creamos un Java (JRE) súper liviano a la medida usando jlink
+RUN $JAVA_HOME/bin/jlink \
+   --add-modules java.base,java.logging,java.xml,java.desktop,java.management,java.naming,java.sql,java.transaction.xa,java.instrument,java.security.jgss,java.security.sasl,java.net.http,java.rmi,jdk.unsupported,java.compiler \
+    --strip-debug \
+    --no-man-pages \
+    --no-header-files \
+    --compress=2 \
+    --output /custom-jre
+
+# ==========================================
+# ETAPA 2: Imagen Final Ultraligera (<200MB)
+# ==========================================
+FROM alpine:3.19
+WORKDIR /app
+
+# Instalamos wget (para el healthcheck) y compatibilidad para la máquina virtual de Java
+RUN apk add --no-cache gcompat wget
+
+# Copiamos nuestro Java recortado de ~50MB generado en la etapa 1
+COPY --from=builder /custom-jre /opt/jre
+ENV PATH="/opt/jre/bin:$PATH"
+
+# Copiamos la aplicación compilada
+COPY --from=builder /app/target/*.jar app.jar
+
+# Exponemos el puerto
+EXPOSE 8081
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8081/ceiba/health || exit 1
+
+# Comando de inicio
+ENTRYPOINT ["java", "-jar", "app.jar"]
