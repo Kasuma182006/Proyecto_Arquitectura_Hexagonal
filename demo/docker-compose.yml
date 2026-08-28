@@ -17,7 +17,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Aplicación Spring Boot (Despliegue)
+  # Aplicación Spring Boot 
   app:
     build:
       context: .
@@ -33,19 +33,12 @@ services:
       postgres-db:
         condition: service_healthy
 
-  # Servicio exclusivo para ejecuciones de pruebas en Jenkins (2 espacios de sangría)
+  # Servicio exclusivo para ejecuciones de pruebas en Jenkins 
   app-test:
     build:
       context: .
       dockerfile: Dockerfile
       target: base
-    environment:
-      DB_URL: jdbc:postgresql://postgres-db:5432/ceiba
-      DB_USERNAME: postgres
-      DB_PASSWORD: kasuma182006
-    depends_on:
-      postgres-db:
-        condition: service_healthy
 
 volumes:
   postgres_data:

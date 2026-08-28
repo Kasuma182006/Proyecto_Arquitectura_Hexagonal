@@ -165,3 +165,82 @@ Configuradas por defecto en el archivo `docker-compose.yml`:
 | `DB_USERNAME` | `postgres` | Usuario de la base de datos |
 | `DB_PASSWORD` | `postgrespassword` | Contraseña de la base de datos |
 
+# 📚 Documentación de API: Colección "ceiba"
+
+Esta es la documentación estructurada de los endpoints extraídos de la colección de Postman.
+
+---
+
+## 🔍 Detalle de cada Petición
+
+### 1. Buscar con Paginación y Orden
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/persona/buscar-filtro?anio=2026&orden=email&direccion=desc&pagina=1&tamano=5`
+* **Query Params:** `anio=2026`, `orden=email`, `direccion=desc`, `pagina=1`, `tamano=5`
+* **Autenticación:** No Auth
+
+---
+
+### 2. Crear Persona
+* **Método:** `POST`
+* **URL:** `http://localhost:8081/ceiba/persona/crear-persona`
+* **Body (JSON):**
+```json
+{
+    "nombre": "andrew",
+    "apellido": "velasquez",
+    "email": "zmail@gmail.com",
+    "fechaNacimiento": "2026-05-26"
+}
+```
+
+---
+
+### 3. Buscar Persona por Apellido
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/persona/buscar-filtro?apellido=velasquez`
+* **Query Params:** `apellido=velasquez`
+
+---
+
+### 4. Eliminar Persona por ID
+* **Método:** `DELETE`
+* **URL:** `http://localhost:8081/ceiba/persona/eliminar-persona/28`
+* **Parámetro de Ruta:** `id = 28`
+
+---
+
+### 5. Buscar Persona por ID (Singular)
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/persona/buscar-persona/28`
+* **Parámetro de Ruta:** `id = 28`
+
+---
+
+### 6. Editar Persona
+* **Método:** `PUT`
+* **URL:** `http://localhost:8081/ceiba/persona/editar-persona/25`
+* **Parámetro de Ruta:** `id = 25`
+* **Body (JSON):**
+```json
+{ 
+    "id": 25,
+    "nombre": "andrew",
+    "apellido": "stiven",
+    "email": "andres@gmail.com",
+    "fechaNacimiento": "2026-06-01"
+}
+```
+
+---
+
+### 7. Listar Todas las Personas
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/personas/listar-personas`
+
+---
+
+### 8. Buscar Persona por ID (Plural)
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/personas/buscar-persona/10`
+* **Parámetro de Ruta:** `id = 10`
