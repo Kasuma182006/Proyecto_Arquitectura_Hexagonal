@@ -1,93 +1,248 @@
-# ADN adn_api_gestion_personas-backend-andres.velasquez
 
+---
+# API para gestión de personas
 
+### 🚀 API de Gestión de Personas - Arquitectura Hexagonal - Andrés Stiven Velasquez Romo
 
-## Getting started
+## Descripción:
+Este proyecto es una aplicación **Spring Boot** construida bajo los principios de la **Arquitectura Hexagonal (Puertos y Adaptadores)**. Proporciona una API REST completa para la gestión, consulta, registro, edición y eliminación de registros de personas, integrada con persistencia en **PostgreSQL**, pruebas automáticas y despliegue contenedorizado con **Docker**.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+---
+## 🛠️ Tecnologías Utilizadas
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+* **Java 17**
+* **Spring Boot 4.1.0** (Spring Web, Spring Data JPA, Validation, WebServices).
+* **Spring Security** (Protección y seguridad de endpoints).
+* **PostgreSQL 15** (Base de datos relacional principal).
+* **Flyway 10.15.2** (Control de versiones y migraciones automáticas de base de datos).
+* **H2 Database** (Base de datos en memoria para entornos de pruebas de integración).
+* **Bucket4j 8.12.0** (Rate Limiting y control de frecuencia de peticiones HTTP).
+* **Springdoc OpenAPI / Swagger 3 (2.8.5)** (Documentación e interfaz interactiva de la API).
+* **Lombok** (Generación automática de código mediante anotaciones).
+* **Docker & Docker Compose** (Empaquetado Multi-Stage y orquestación con PostgreSQL).
 
-## Add your files
+---
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 📐 Arquitectura del Proyecto
+
+El código sigue estrictamente la separación de responsabilidades guiada por la **Arquitectura Hexagonal**:
+
+```text
+com.example.demo
+ ├── domain                            # NÚCLEO DE DOMINIO (Reglas de negocio puro)
+ │    ├── model                        # Entidades del dominio (ej. Persona)
+ │    └── ports                        # Interfaces / Contratos
+ │         ├── in                      # Puertos de entrada (ej. PersonaServiceInt)
+ │         └── out                     # Puertos de salida (ej. PersonaRepositoryPort)
+ |
+ |── application
+ |       └─ UseCasesServices            #Casos de uso de la aplicación
+ |   
+ └── infrastructure                    # 🔌 INFRAESTRUCTURA (Adaptadores externos)
+      └── adapters
+           ├── config                  # Configuraciones del proyecto(JpaConfig + BeanConfig)
+           └── web                     # Adaptador de entrada Web (REST API)
+                ├── data
+                │    ├── dto           # Objetos de transferencia de datos (PersonaDto
+                |    |                                                       QueryParams, etc.)
+                │    |── mappers       # Mapeadores (MapStruct) entre Dominio y DTO
+                |    |── entity        # Clases que representan las tablas en la base de datos
+                |    |── repository    # Persistencia JPA + hibernate
+                |    |── specification # Genereador de condiciones dinamica para filtrar personas
+                |─── in
+                |     |── controllers   # Controladores REST (PersonaController)
+                |              |
+                |              └─ controllerAdvice  # Manejador central de errores  
+                |── out            
+                     └─ Adaptadores de persistencia            
+```
+
+---
+
+## 🐳 Despliegue Local con Docker Compose
+
+El proyecto está preparado para ejecutarse completamente contenedorizado con **un solo comando**, utilizando una construcción *Multi-Stage*:
+
+### Prerrequisitos
+
+* Tener instalado **Docker Desktop** o **Rancher Desktop**.
+
+### Instrucciones de Ejecución
+
+1. Clona el repositorio y ubícate en la raíz del proyecto:
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd demo
 
 ```
-cd existing_repo
-git remote add origin https://git.ceiba.com.co/adn/adn-adn_api_gestion_personas-backend-andres.velasquez.git
-git branch -M main
-git push -uf origin main
+
+
+2. Levanta los servicios (Aplicación Spring Boot + PostgreSQL):
+```bash
+docker compose up -d --build
+
 ```
 
-## Integrate with your tools
 
-* [Set up project integrations](https://git.ceiba.com.co/adn/adn-adn_api_gestion_personas-backend-andres.velasquez/-/settings/integrations)
+3. Revisa el estado de los contenedores:
+```bash
+docker compose ps
 
-## Collaborate with your team
+```
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
 
-## Test and Deploy
+4. Para apagar los servicios y detener la base de datos:
+```bash
+docker compose down
 
-Use the built-in continuous integration in GitLab.
+```
+---
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+## 🗄️ Migraciones de Base de Datos (Flyway)
 
-***
+El proyecto utiliza **Flyway** para el control de versiones y evolución del esquema de la base de datos. No es necesario ejecutar scripts DDL (`CREATE TABLE`, `ALTER TABLE`, etc.) de forma manual; el sistema los gestiona automáticamente.
 
-# Editing this README
+* **Ejecución automática:** Al iniciar la aplicación (ya sea localmente o mediante Docker Compose), Flyway se conecta a PostgreSQL, verifica el estado actual de la base de datos y ejecuta cualquier script pendiente de forma segura.
+* **Ubicación de los scripts:** Todos los archivos de migración se encuentran en el directorio `src/main/resources/db/migration`.
+* **Convención de nomenclatura:** Si necesitas modificar la base de datos en el futuro, debes crear un nuevo archivo siguiendo estrictamente el estándar de Flyway:
+  * Formato: `V{version}__{descripcion_en_minusculas}.sql`
+  * Ejemplo: `V2__agregar_columna_telefono_a_persona.sql`
+  * *(Nota: Son dos guiones bajos `__` separando la versión de la descripción).*
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
 
-## Suggestions for a good README
+## 📑 Documentación de la API (Endpoints)
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Ruta base del controlador: `/persona`
 
-## Name
-Choose a self-explaining name for your project.
+| Método | Endpoint | Descripción | Códigos HTTP de Respuesta |
+| --- | --- | --- | --- |
+| **GET** | `/persona/listar-personas` | Obtiene el listado completo de personas sin filtros ni paginación. | `200 OK` |
+| **GET** | `/persona/buscar-persona/{id}` | Busca la información detallada de una persona por su ID único. | `200 OK`, `404 Not Found` |
+| **POST** | `/persona/crear-persona` | Registra una nueva persona en el sistema. | `201 Created`, `400 Bad Request`, `409 Conflict` (Email duplicado) |
+| **PUT** | `/persona/editar-persona/{id}` | Actualiza los datos de una persona existente identificada por su ID. | `200 OK`, `400 Bad Request`, `404 Not Found`, `409 Conflict` |
+| **DELETE** | `/persona/eliminar-persona/{id}` | Elimina permanentemente el registro de una persona por su ID. | `204 No Content`, `404 Not Found` |
+| **GET** | `/persona/buscar-filtro` | Búsqueda dinámica con filtros avanzados y respuesta paginada (`QueryParams`). | `200 OK` |
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+---
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## 🔍 Swagger / OpenAPI UI
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Una vez iniciada la aplicación, puedes acceder a la interfaz interactiva de Swagger para probar todos los endpoints directamente desde tu navegador:
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+👉 **URL de Swagger:** [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+👉 **Endpoint de Health Check:** [http://localhost:8081/ceiba/health](http://localhost:8081/ceiba/health)
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+---
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+## 🧪 Pruebas Automatizadas
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+Las pruebas unitarias y de integración se ejecutan utilizando **H2 en memoria** durante el proceso de compilación del `Dockerfile` (Etapa `tester`).
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Para ejecutar las pruebas localmente con Maven:
 
-## License
-For open source projects, say how it is licensed.
+```bash
+mvn test
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```
+
+Para forzar la reconstrucción verificando los tests dentro del contenedor Docker:
+
+```bash
+docker compose build --progress=plain
+
+```
+
+---
+
+## ⚙️ Variables de Entorno
+
+Configuradas por defecto en el archivo `docker-compose.yml`:
+
+| Variable | Valor por Defecto | Descripción |
+| --- | --- | --- |
+| `DB_URL` | `jdbc:postgresql://postgres-db:5432/ceibadb` | URL de conexión JDBC a PostgreSQL |
+| `DB_USERNAME` | `postgres` | Usuario de la base de datos |
+| `DB_PASSWORD` | `postgrespassword` | Contraseña de la base de datos |
+
+# 📚 Documentación de API: Colección "ceiba"
+
+Esta es la documentación estructurada de los endpoints extraídos de la colección de Postman.
+
+---
+
+## 🔍 Detalle de cada Petición
+
+### 1. Buscar con Paginación y Orden
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/persona/buscar-filtro?anio=2026&orden=email&direccion=desc&pagina=1&tamano=5`
+* **Query Params:** `anio=2026`, `orden=email`, `direccion=desc`, `pagina=1`, `tamano=5`
+* **Autenticación:** No Auth
+
+---
+
+### 2. Crear Persona
+* **Método:** `POST`
+* **URL:** `http://localhost:8081/ceiba/persona/crear-persona`
+* **Body (JSON):**
+```json
+{
+    "nombre": "andrew",
+    "apellido": "velasquez",
+    "email": "zmail@gmail.com",
+    "fechaNacimiento": "2026-05-26"
+}
+```
+
+---
+
+### 3. Buscar Persona por Apellido
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/persona/buscar-filtro?apellido=velasquez`
+* **Query Params:** `apellido=velasquez`
+
+---
+
+### 4. Eliminar Persona por ID
+* **Método:** `DELETE`
+* **URL:** `http://localhost:8081/ceiba/persona/eliminar-persona/28`
+* **Parámetro de Ruta:** `id = 28`
+
+---
+
+### 5. Buscar Persona por ID (Singular)
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/persona/buscar-persona/28`
+* **Parámetro de Ruta:** `id = 28`
+
+---
+
+### 6. Editar Persona
+* **Método:** `PUT`
+* **URL:** `http://localhost:8081/ceiba/persona/editar-persona/25`
+* **Parámetro de Ruta:** `id = 25`
+* **Body (JSON):**
+```json
+{ 
+    "id": 25,
+    "nombre": "andrew",
+    "apellido": "stiven",
+    "email": "andres@gmail.com",
+    "fechaNacimiento": "2026-06-01"
+}
+```
+
+---
+
+### 7. Listar Todas las Personas
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/personas/listar-personas`
+
+---
+
+### 8. Buscar Persona por ID (Plural)
+* **Método:** `GET`
+* **URL:** `http://localhost:8081/ceiba/personas/buscar-persona/10`
+* **Parámetro de Ruta:** `id = 10`
