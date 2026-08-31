@@ -1,8 +1,10 @@
 
 ---
+# API para gestión de personas
 
-# 🚀 API de Gestión de Personas - Arquitectura Hexagonal - Andrés Stiven Velasquez Romo
+### 🚀 API de Gestión de Personas - Arquitectura Hexagonal - Andrés Stiven Velasquez Romo
 
+## Descripción:
 Este proyecto es una aplicación **Spring Boot** construida bajo los principios de la **Arquitectura Hexagonal (Puertos y Adaptadores)**. Proporciona una API REST completa para la gestión, consulta, registro, edición y eliminación de registros de personas, integrada con persistencia en **PostgreSQL**, pruebas automáticas y despliegue contenedorizado con **Docker**.
 
 ---

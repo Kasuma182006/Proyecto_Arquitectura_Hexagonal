@@ -32,6 +32,12 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8081/ceiba/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   # Servicio exclusivo para ejecuciones de pruebas en Jenkins 
   app-test:
