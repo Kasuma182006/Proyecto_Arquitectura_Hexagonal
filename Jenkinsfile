@@ -2,32 +2,26 @@ pipeline {
     agent any
 
     stages {
-        stage('1. Descargar Código') {
-            steps {
-                echo 'Descargando la última versión del código desde GitLab...'
-                checkout scm
-            }
-        }
 
-        stage('2. Construir Imagen') {
+        stage('Create image') {
             steps {
                 echo 'Construyendo las imágenes de Docker en el servidor corporativo...'
-                sh 'docker-compose build'
+                sh 'docker compose -f demo/docker-compose.yml build'
             }
         }
 
-        stage('3. Ejecutar Pruebas Unitarias') {
+        stage('Run Tests') {
             steps {
                 echo 'Corriendo las pruebas unitarias estándar con Maven dentro del contenedor...'
-                sh 'docker-compose run --rm app-test mvn clean test'
+                sh 'docker compose -f demo/docker-compose.yml run --rm app-test mvn clean test'
             }
         }
 
-        stage('4. Desplegar / Levantar Servicios') {
+        stage('Deploy / Spin Up Services') {
             steps {
                 echo 'Pruebas exitosas. Desplegando y levantando la aplicación...'
-                sh 'docker-compose down -v'
-                sh 'docker-compose up -d'
+                sh 'docker compose -f demo/docker-compose.yml down -v'
+                sh 'docker compose -f demo/docker-compose.yml up -d'
             }
         }
     }
@@ -35,10 +29,10 @@ pipeline {
     post {
         failure {
             echo 'Fallo detectado en alguna etapa del Pipeline. Limpiando contenedores...'
-            sh 'docker-compose down'
+            sh 'docker compose -f demo/docker-compose.yml down'
         }
         success {
-            echo '¡Pipeline exitoso! La aplicación Spring Boot ha sido verificada y desplegada.'
+            echo 'Pipeline exitoso. La aplicación Spring Boot ha sido verificada y desplegada.'
         }
     }
 }
