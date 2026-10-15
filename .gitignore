@@ -1,0 +1,35 @@
+# IDE / editor
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+
+# Build output / Maven
+target/
+build/
+.mvn/wrapper/maven-wrapper.jar
+dependency-reduced-pom.xml
+
+# Jenkins temp workspaces
+*@tmp/
+*@libs/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+
+# Local environment
+.env
